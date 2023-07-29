@@ -1,0 +1,6 @@
+# copy from mongodb
+client: mongodb+srv://<username>:<password>@<cluster_name_etc>.mongodb.net/?retryWrites=true&w=majority
+cluster: <your_cluster_name>
+user: <user>
+password: <your_password>
+database_name: <your_database_name>

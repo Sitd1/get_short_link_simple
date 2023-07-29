@@ -15,4 +15,5 @@ app.router.add_post('/create_short_link', create_short_link)
 # Подключение к MongoDB
 app.on_startup.append(connect_to_mongodb)
 
-web.run_app(app)
+if __name__ == '__main__':
+    web.run_app(app)

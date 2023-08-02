@@ -1,0 +1,67 @@
+swagger: '2.0'
+info:
+  title: URL Shortener API
+  version: '1.0'
+paths:
+  /shorten:
+    post:
+      description: Create a short URL from the given long URL
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Original URL to be shortened
+          required: true
+          schema:
+            type: object
+            properties:
+              original_url:
+                type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              short_url:
+                type: string
+              request_count:
+                type: integer
+        400:
+          description: Bad Request
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+  /{short_url}:
+    get:
+      description: Retrieve the original URL associated with the short URL
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: short_url
+          description: Short URL to be expanded
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              original_url:
+                type: string
+              request_count:
+                type: integer
+        404:
+          description: Not Found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string

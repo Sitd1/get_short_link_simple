@@ -1,4 +1,4 @@
-import aiohttp
+import uuid
 import aiohttp_swagger
 from aiohttp import web
 import pymongo
@@ -9,8 +9,10 @@ db = mongo_client["url_shortener"]
 collection = db["urls"]
 
 # Функция для генерации случайной короткой ссылки
-def generate_short_url():
-    # Ваша логика генерации короткой ссылки (может быть использован UUID или сжатие оригинальной ссылки)
+def generate_short_link(length: int = 8) -> str:
+    # UUID  Generation
+    short_link = str(uuid.uuid4()).replace('-', '')[:length]
+    return short_link
 
 # Обработчик для создания короткой ссылки
 async def create_short_url(request):

@@ -63,4 +63,5 @@ aiohttp_swagger.setup_swagger(
     swagger_from_file='swagger.yaml'
 )
 
-web.run_app(app)
+if __name__ ==  "__main__":
+    web.run_app(app)

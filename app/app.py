@@ -55,11 +55,29 @@ async def get_original_url(request):
 
     return web.json_response({"original_url": url_data["original_url"], "request_count": url_data["request_count"]})
 
+# Обработчик для перехода по короткой ссылке
+async def redirect_short_url(request):
+    short_url = request.match_info["short_url"]
+
+    # Ищем запись в базе данных по короткой ссылке
+    url_data = collection.find_one({"short_url": short_url})
+
+    if not url_data:
+        return web.json_response({"error": "Short URL not found"}, status=404)
+
+    # Увеличиваем счетчик переходов и обновляем запись в базе данных
+    collection.update_one({"short_url": short_url}, {"$inc": {"request_count": 1}})
+
+    # Выполняем редирект на оригинальную ссылку
+    return web.HTTPFound(url_data["original_url"])
+
 # Настройка сервера и маршрутов
 app = web.Application()
 app.router.add_get('/', index)
 app.router.add_post('/shorten', create_short_url)
 app.router.add_get('/{short_url}', get_original_url)
+app.router.add_get('/r/{short_url}', redirect_short_url)  # Добавлен новый маршрут для перехода по короткой ссылке
+
 
 # Настройка Swagger
 aiohttp_swagger.setup_swagger(
@@ -72,8 +90,5 @@ aiohttp_swagger.setup_swagger(
 # Настройка статических файлов
 app.router.add_static('/static/', path='static', name='static')
 
-web.run_app(app)
-
-
-if __name__ ==  "__main__":
+if __name__ == "__main__":
     web.run_app(app)

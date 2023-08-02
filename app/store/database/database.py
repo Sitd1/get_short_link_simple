@@ -13,3 +13,6 @@ async def connect_to_mongodb(app):
     app['mongo_client'] = client
     app['db'] = app['mongo_client'][database_name]
     app['collection'] = app['db'][collection_name]
+
+if __name__ == "__main__":
+    print(config)

@@ -2,17 +2,22 @@ import uuid
 import aiohttp_swagger
 from aiohttp import web
 import pymongo
+from app.url_shortener.utils import generate_short_url
+
 
 # Подключение к базе данных MongoDB
+
+
 mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
 db = mongo_client["url_shortener"]
 collection = db["urls"]
 
-# Функция для генерации случайной короткой ссылки
-def generate_short_link(length: int = 8) -> str:
-    # UUID  Generation
-    short_link = str(uuid.uuid4()).replace('-', '')[:length]
-    return short_link
+
+# Обработчик для загрузки веб-страницы
+async def index(request):
+    with open('templates/index.html', 'r') as file:
+        content = file.read()
+    return web.Response(text=content, content_type='text/html')
 
 # Обработчик для создания короткой ссылки
 async def create_short_url(request):
@@ -52,6 +57,7 @@ async def get_original_url(request):
 
 # Настройка сервера и маршрутов
 app = web.Application()
+app.router.add_get('/', index)
 app.router.add_post('/shorten', create_short_url)
 app.router.add_get('/{short_url}', get_original_url)
 
@@ -62,6 +68,12 @@ aiohttp_swagger.setup_swagger(
     ui_version=3,
     swagger_from_file='swagger.yaml'
 )
+
+# Настройка статических файлов
+app.router.add_static('/static/', path='static', name='static')
+
+web.run_app(app)
+
 
 if __name__ ==  "__main__":
     web.run_app(app)

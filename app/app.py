@@ -2,7 +2,7 @@ import uuid
 import aiohttp_swagger
 from aiohttp import web
 import pymongo
-from app.url_shortener.utils import generate_short_url
+from url_shortener.utils import generate_short_url
 
 
 # Подключение к базе данных MongoDB

@@ -1,14 +1,18 @@
 import uuid
+from urllib import request
+
 import aiohttp_swagger
 from aiohttp import web
 import pymongo
 from url_shortener.utils import generate_short_url
+from settings import load_config
+# from database import connect_to_mongodb
 
+config = load_config()
 
 # Подключение к базе данных MongoDB
 
-
-mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
+mongo_client = pymongo.MongoClient(f"mongodb://localhost:27017/")
 db = mongo_client["url_shortener"]
 collection = db["urls"]
 
@@ -19,7 +23,8 @@ async def index(request):
         content = file.read()
     return web.Response(text=content, content_type='text/html')
 
-# Обработчик для создания короткой ссылки
+
+# Функция для создания короткой ссылки
 async def create_short_url(request):
     data = await request.json()
     original_url = data.get("original_url")
@@ -33,12 +38,13 @@ async def create_short_url(request):
         return web.json_response({"short_url": existing_url["short_url"], "request_count": existing_url["request_count"]})
 
     # Генерируем короткую ссылку
-    short_url = generate_short_url()
+    short_url = generate_short_url(length=config['short_link_length'])
 
     # Сохраняем запись в базе данных
     collection.insert_one({"original_url": original_url, "short_url": short_url, "request_count": 0})
 
     return web.json_response({"short_url": short_url, "request_count": 0})
+
 
 # Обработчик для получения оригинальной ссылки по короткой ссылке
 async def get_original_url(request):
@@ -52,8 +58,10 @@ async def get_original_url(request):
 
     # Увеличиваем счетчик запросов и обновляем запись в базе данных
     collection.update_one({"short_url": short_url}, {"$inc": {"request_count": 1}})
+    print(url_data)
 
     return web.json_response({"original_url": url_data["original_url"], "request_count": url_data["request_count"]})
+
 
 # Обработчик для перехода по короткой ссылке
 async def redirect_short_url(request):
@@ -71,6 +79,7 @@ async def redirect_short_url(request):
     # Выполняем редирект на оригинальную ссылку
     return web.HTTPFound(url_data["original_url"])
 
+
 # Настройка сервера и маршрутов
 app = web.Application()
 app.router.add_get('/', index)
@@ -80,12 +89,7 @@ app.router.add_get('/r/{short_url}', redirect_short_url)  # Добавлен н�
 
 
 # Настройка Swagger
-aiohttp_swagger.setup_swagger(
-    app=app,
-    swagger_url='/swagger',
-    ui_version=3,
-    swagger_from_file='swagger.yaml'
-)
+aiohttp_swagger.setup_swagger(app=app, **config['setup_swagger'])
 
 # Настройка статических файлов
 app.router.add_static('/static/', path='static', name='static')

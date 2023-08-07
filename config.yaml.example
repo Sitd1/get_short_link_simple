@@ -1,0 +1,12 @@
+#client: mongodb+srv://<username>:<password>@cluster0.texm22s.mongodb.net/?retryWrites=true&w=majority
+client:
+  host: localhost
+  port: 27017
+database_name: url_shortener
+collection_name: urls
+short_link_length: 8
+site_name: 0.0.0.0:8080
+setup_swagger:
+  swagger_url: '/swagger'
+  ui_version: 3
+  swagger_from_file: 'swagger.yaml'

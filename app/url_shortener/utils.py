@@ -7,7 +7,7 @@ def is_valid_url(url) -> bool:
     pattern = r'^(https?|ftp)://[^\s/$.?#].[^\s]*$'
     # Проверяем, соответствует ли ссылка формату URL
     if re.match(pattern, url):
-      gi  return True
+      return True
     else:
         return False
 

@@ -1,6 +1,3 @@
-import uuid
-from urllib import request
-
 import aiohttp_swagger
 from aiohttp import web
 import pymongo
@@ -84,8 +81,10 @@ async def redirect_short_url(request):
 app = web.Application()
 app.router.add_get('/', index)
 app.router.add_post('/shorten', create_short_url)
-app.router.add_get('/{short_url}', get_original_url)
-app.router.add_get('/r/{short_url}', redirect_short_url)  # Добавлен новый маршрут для перехода по короткой ссылке
+app.router.add_get('/{short_url}', redirect_short_url)
+
+# app.router.add_get('/{short_url}', get_original_url)
+# app.router.add_get('/r/{short_url}', redirect_short_url)  # Добавлен новый маршрут для перехода по короткой ссылке
 
 
 # Настройка Swagger

@@ -1,22 +1,11 @@
-import pymongo
-from utils import load_config
+import motor.motor_asyncio
 
-config = load_config()
+async def get_mongo_client(app):
+    return motor.motor_asyncio.AsyncIOMotorClient(app['mongo'])
 
-# async def connect_to_mongodb(app):
-#     client_ = config['client'].replace('<username>', config['user']).replace('<password>', config['password'])
-#     client = pymongo.MongoClient(client_)
-#     app['mongo_client'] = client
-#     app['db'] = app['mongo_client']["short_links"]
-#     app['collection'] = app['db']["links"]
+async def setup_mongo(app):
+    app['mongo_client'] = await get_mongo_client(app)
+    app['db'] = app['mongo_client'][app['db_name']]
 
-
-if __name__ == '__main__':
-    client_ = config['client'].replace('<username>', config['user']).replace('<password>', config['password'])
-    client = pymongo.MongoClient(client_)
-    db = client.test
-    coll = db.new_users
-    coll.insert_one({"id": 1, "name": 'Apex'})
-    print('ok')
-
-
+async def close_mongo(app):
+    app['mongo_client'].close()

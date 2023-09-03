@@ -1,0 +1,4 @@
+FROM mongo:3.1
+
+# Задайте имя базы данных при запуске контейнера (замените на своё)
+ENV MONGO_INITDB_DATABASE mongodb_database

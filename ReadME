@@ -1,0 +1,7 @@
+docker build -t my-python-app .
+
+Где my-python-app - это имя вашего Docker-образа.
+
+Затем, чтобы запустить контейнер с вашим приложением, выполните:
+
+docker run -p 8080:8080 my-python-app

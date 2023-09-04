@@ -60,6 +60,7 @@ async def get_original_url(request):
     return web.json_response({"original_url": url_data["original_url"], "request_count": url_data["request_count"]})
 
 
+
 # Обработчик для перехода по короткой ссылке
 async def redirect_short_url(request):
     short_url = request.match_info["short_url"]

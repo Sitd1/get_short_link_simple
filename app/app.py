@@ -82,6 +82,7 @@ app = web.Application()
 app.router.add_get('/', index)
 app.router.add_post('/shorten', create_short_url)
 app.router.add_get('/{short_url}', redirect_short_url)
+app.router.add_post('/{short_url}', get_original_url)
 
 # app.router.add_get('/{short_url}', get_original_url)
 # app.router.add_get('/r/{short_url}', redirect_short_url)  # Добавлен новый маршрут для перехода по короткой ссылке

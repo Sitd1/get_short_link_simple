@@ -1,54 +1,67 @@
-from aiohttp import web
-import aiohttp_jinja2
-from pymongo import collection
-from create_short_link import generate_short_link
 
 
-async def show_form(request):
-    return aiohttp_jinja2.render_template('index.html', request, {})
+class handler:
+    def __init__(self):
+        pass
+
+    # Обработчик для загрузки веб-страницы
+    async def index(self, request):
+        with open('templates/index.html', 'r') as file:
+            content = file.read()
+        return web.Response(text=content, content_type='text/html')
 
 
-async def create_short_link(request):
-    # Получить длинную ссылку из входящего запроса
-    long_link = request.rel_url.query.get('long_link')
+    # Функция для создания короткой ссылки
+    async def create_short_url(self, request):
+        data = await request.json()
+        original_url = data.get("original_url")
 
-    # Проверить, не существует ли уже короткая ссылка для данной длинной ссылки в базе данных
-    existing_link = collection.find_one({'long_link': long_link})
-    if existing_link:
-        return web.json_response({'short_link': existing_link['short_link']})
+        if not original_url:
+            return web.json_response({"error": "Original URL is required"}, status=400)
 
-    # Сгенерировать короткую ссылку (например, с помощью UUID)
-    short_link = generate_short_link()
+        # Проверка, есть ли уже запись в базе данных для данной оригинальной ссылки
+        existing_url = collection.find_one({"original_url": original_url})
+        if existing_url:
+            return web.json_response({"short_url": existing_url["short_url"], "request_count": existing_url["request_count"]})
 
-    # Сохранить данные в базе данных
-    collection.insert_one({'long_link': long_link, 'short_link': short_link, 'clicks': 0})
+        # Генерируем короткую ссылку
+        short_url = generate_short_url(length=config['short_link_length'])
 
-    return web.json_response({'short_link': short_link})
+        # Сохраняем запись в базе данных
+        collection.insert_one({"original_url": original_url, "short_url": short_url, "request_count": 0})
 
-
-async def get_long_link(request):
-    # Получить короткую ссылку из входящего запроса
-    short_link = request.rel_url.query.get('short_link')
-    # Найти запись с данной короткой ссылкой в базе данных
-    link = collection.find_one({'short_link': short_link})
-    if not link:
-        return web.json_response({'error': 'Short link not found'}, status=404)
-
-    # # Увеличить счетчик кликов
-    # collection.update_one({'short_link': short_link}, {'$inc': {'clicks': 1}})
-
-    # Вернуть истинную длинную ссылку
-    return web.json_response({'long_link': link['long_link']})
+        return web.json_response({"short_url": short_url, "request_count": 0})
 
 
-async def get_statistics(request):
-    # Получить короткую ссылку из входящего запроса
-    short_link = request.rel_url.query.get('short_link')
+    # Обработчик для получения оригинальной ссылки по короткой ссылке
+    async def get_original_url(self, request):
+        short_url = request.match_info["short_url"]
 
-    # Найти запись с данной короткой ссылкой в базе данных
-    link = collection.find_one({'short_link': short_link})
-    if not link:
-        return web.json_response({'error': 'Short link not found'}, status=404)
+        # Ищем запись в базе данных по короткой ссылке
+        url_data = collection.find_one({"short_url": short_url})
 
-    # Вернуть статистику
-    return web.json_response({'short_link': short_link, 'clicks': link['clicks']})
+        if not url_data:
+            return web.json_response({"error": "Short URL not found"}, status=404)
+
+        # Увеличиваем счетчик запросов и обновляем запись в базе данных
+        collection.update_one({"short_url": short_url}, {"$inc": {"request_count": 1}})
+        print(url_data)
+
+        return web.json_response({"original_url": url_data["original_url"], "request_count": url_data["request_count"]})
+
+
+    # Обработчик для перехода по короткой ссылке
+    async def redirect_short_url(self, request):
+        short_url = request.match_info["short_url"]
+
+        # Ищем запись в базе данных по короткой ссылке
+        url_data = collection.find_one({"short_url": short_url})
+
+        if not url_data:
+            return web.json_response({"error": "Short URL not found"}, status=404)
+
+        # Увеличиваем счетчик переходов и обновляем запись в базе данных
+        collection.update_one({"short_url": short_url}, {"$inc": {"request_count": 1}})
+
+        # Выполняем редирект на оригинальную ссылку
+        return web.HTTPFound(url_data["original_url"])

@@ -24,21 +24,25 @@ async def index(request):
 # Функция для создания короткой ссылки
 async def create_short_url(request):
     data = await request.json()
-    original_url = data.get("original_url")
+    posted_url = data.get("original_url")
 
-    if not original_url:
+    if not posted_url:
         return web.json_response({"error": "Original URL is required"}, status=400)
 
     # Проверка, есть ли уже запись в базе данных для данной оригинальной ссылки
-    existing_url = collection.find_one({"original_url": original_url})
-    if existing_url:
-        return web.json_response({"short_url": existing_url["short_url"], "request_count": existing_url["request_count"]})
+    existing_orig_url = collection.find_one({"original_url": posted_url})
+    exitinig_short_url = collection.find_one({"short_url": posted_url})
+    if existing_orig_url:
+        return web.json_response({"short_url": existing_orig_url["short_url"], "request_count": existing_orig_url["request_count"]})
+    elif exitinig_short_url:
+        # Проверка, есть ли уже запись в базе данных для короткой ссылки
+        return web.json_response({"short_url": exitinig_short_url["original_url"], "request_count": exitinig_short_url["request_count"]})
 
     # Генерируем короткую ссылку
     short_url = generate_short_url(length=config['short_link_length'])
 
     # Сохраняем запись в базе данных
-    collection.insert_one({"original_url": original_url, "short_url": short_url, "request_count": 0})
+    collection.insert_one({"original_url": posted_url, "short_url": short_url, "request_count": 0})
 
     return web.json_response({"short_url": short_url, "request_count": 0})
 

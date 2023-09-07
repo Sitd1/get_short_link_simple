@@ -5,11 +5,11 @@ from url_shortener.utils import generate_short_url
 from settings import load_config
 # from database import connect_to_mongodb
 
-config = load_config()
+config = load_config('config.yaml')
 
 # Подключение к базе данных MongoDB
 
-mongo_client = pymongo.MongoClient(f"mongodb://localhost:27017/")
+mongo_client = pymongo.MongoClient("mongodb://mongodb:27017/")
 db = mongo_client["url_shortener"]
 collection = db["urls"]
 
@@ -87,9 +87,6 @@ app.router.add_get('/', index)
 app.router.add_post('/shorten', create_short_url)
 app.router.add_get('/{short_url}', redirect_short_url)
 app.router.add_post('/{short_url}', get_original_url)
-
-# app.router.add_get('/{short_url}', get_original_url)
-# app.router.add_get('/r/{short_url}', redirect_short_url)  # Добавлен новый маршрут для перехода по короткой ссылке
 
 
 # Настройка Swagger

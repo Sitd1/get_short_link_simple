@@ -15,7 +15,7 @@ def load_config(config_file_name=None, config_file_full_path=None) -> dict:
         config_file_name = 'config.yaml'
 
     if config_file_full_path is None:
-        config_file_full_path = Path(__file__).parent.parent
+        config_file_full_path = Path(__file__).parent
 
     config_file = config_file_full_path / config_file_name
 

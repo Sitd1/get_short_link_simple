@@ -1,0 +1,46 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo:latest  # Используется официальный образ MongoDB из Docker Hub
+    ports:
+      - "27017:27017"  # Можно настроить порты по вашему усмотрению
+    volumes:
+      - ./data/db:/data/db  # Монтируем том для хранения данных MongoDB
+  webapp:
+    build:
+      context: ./app  # Относительный путь к папке с вашим приложением
+    ports:
+      - "8080:8080"  # Замените на порт, который использует ваше приложение
+    depends_on:
+      - mongodb
+
+
+
+#version: '3'
+#services:
+#  mongodb:
+#    image: mongo:latest # Используется официальный образ MongoDB из Docker Hub
+#    container_name: shortener_mongodb
+#    volumes:
+#      - shortener_mongodb_v
+#    networks:
+#      - shortener_network_v
+#    ports:
+#        - "27017:27017"  # Можно настроить порты по вашему усмотрению
+#  app:
+#    build:
+#      context: ./app  # Путь к папке с вашим приложением
+#    container_name: shortener_app
+#    networks:
+#      - shortener_network_v
+#    ports:
+#      - "8000:8000"  # Замените на порт, который использует ваше приложение
+#    depends_on:
+#      - mongodb
+#volumes:
+#  mongodb_shortener_v:
+#    name: shortener_mongodb_v
+#networks:
+#  shortener_network_v:
+#    name: shortener_network_v
+#

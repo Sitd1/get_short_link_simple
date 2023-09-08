@@ -1,25 +1,23 @@
-# Используйте базовый образ Python
-FROM python:3.9
+# Используем официальный образ Python 3.10.11
+FROM python:3.10.11
 
-# Устанавливаем необходимые системные пакеты
-RUN apt-get update && apt-get install -y \
-    python3.10-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Назначаем рабочую дирректорию
+WORKDIR /shortener_app
 
-# Создайте директорию приложения
-WORKDIR /app
+# Копируем зависимости и Pipfile.lock для последующей установки
+COPY Pipfile Pipfile.lock config.yaml ./
 
-# Копируйте зависимости и Pipfile.lock для установки зависимостей
-COPY Pipfile Pipfile.lock /app/
-
-# Установите Pipenv
+# Устанавливаем Pipenv
 RUN pip install pipenv
 
-# Установите зависимости с использованием Pipenv
+# Устанавливаем зависимости с использованием Pipenv
 RUN pipenv install --deploy --ignore-pipfile
 
-# Копируйте все остальные файлы приложения
-COPY . /app/
+# Назначаем директорию приложения с основным кодом
+WORKDIR /shortener_app/app
 
-# Запустите ваше приложение
+# Копируем все остальные файлы приложения
+COPY app /shortener_app/app/
+
+# Запускаем приложение приложение
 CMD ["pipenv", "run", "python", "app.py"]

@@ -9,9 +9,9 @@ config = load_config('config.yaml')
 
 # Подключение к базе данных MongoDB
 
-mongo_client = pymongo.MongoClient("mongodb://mongodb:27017/")
-db = mongo_client["url_shortener"]
-collection = db["urls"]
+mongo_client = pymongo.MongoClient(config.get('mongo_client', 'mongodb://mongodb:27017/'))
+db = mongo_client[config.get('db_name', 'url_shortener')]
+collection = db[config.get('collection_name', 'urls')]
 
 
 # Обработчик для загрузки веб-страницы
@@ -24,10 +24,10 @@ async def index(request):
 # Функция для создания короткой ссылки
 async def create_short_url(request):
     data = await request.json()
-    posted_url = data.get("original_url")
+    posted_url = data.get('original_url')
 
     if not posted_url:
-        return web.json_response({"error": "Original URL is required"}, status=400)
+        return web.json_response({'error': 'Original URL is required'}, status=400)
 
     # Проверка, есть ли уже запись в базе данных для данной оригинальной ссылки
     existing_orig_url = collection.find_one({"original_url": posted_url})

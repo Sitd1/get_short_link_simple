@@ -5,13 +5,13 @@ from url_shortener.utils import generate_short_url
 from settings import load_config
 # from database import connect_to_mongodb
 
-config = load_config()
+config = load_config('config.yaml')
 
 # Подключение к базе данных MongoDB
 
-mongo_client = pymongo.MongoClient(f"mongodb://localhost:27017/")
-db = mongo_client["url_shortener"]
-collection = db["urls"]
+mongo_client = pymongo.MongoClient(config.get('mongo_client', 'mongodb://mongodb:27017/'))
+db = mongo_client[config.get('db_name', 'url_shortener')]
+collection = db[config.get('collection_name', 'urls')]
 
 
 # Обработчик для загрузки веб-страницы
@@ -24,10 +24,10 @@ async def index(request):
 # Функция для создания короткой ссылки
 async def create_short_url(request):
     data = await request.json()
-    posted_url = data.get("original_url")
+    posted_url = data.get('original_url')
 
     if not posted_url:
-        return web.json_response({"error": "Original URL is required"}, status=400)
+        return web.json_response({'error': 'Original URL is required'}, status=400)
 
     # Проверка, есть ли уже запись в базе данных для данной оригинальной ссылки
     existing_orig_url = collection.find_one({"original_url": posted_url})
@@ -64,7 +64,6 @@ async def get_original_url(request):
     return web.json_response({"original_url": url_data["original_url"], "request_count": url_data["request_count"]})
 
 
-
 # Обработчик для перехода по короткой ссылке
 async def redirect_short_url(request):
     short_url = request.match_info["short_url"]
@@ -89,15 +88,13 @@ app.router.add_post('/shorten', create_short_url)
 app.router.add_get('/{short_url}', redirect_short_url)
 app.router.add_post('/{short_url}', get_original_url)
 
-# app.router.add_get('/{short_url}', get_original_url)
-# app.router.add_get('/r/{short_url}', redirect_short_url)  # Добавлен новый маршрут для перехода по короткой ссылке
-
 
 # Настройка Swagger
 aiohttp_swagger.setup_swagger(app=app, **config['setup_swagger'])
 
 # Настройка статических файлов
 app.router.add_static('/static/', path='static', name='static')
+
 
 if __name__ == "__main__":
     web.run_app(app)
